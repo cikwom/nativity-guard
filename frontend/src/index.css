@@ -1,0 +1,328 @@
+﻿@import 'tailwindcss';
+@import 'leaflet/dist/leaflet.css';
+@import './theme.css';
+
+/*
+  Nativity Guard — "Dawn Canopy" design tokens (Tailwind v4 CSS-first).
+  Forest shelter, dawn warmth and readable operational surfaces.
+  Red stays reserved for emergency. See frontend/frontReadme.md §0.5.
+
+  Theme overrides live in theme.css — this file is the base palette.
+*/
+@theme {
+  /* Surfaces */
+  --color-void: #091613;
+  --color-base: #10221d;
+  --color-surface: #193129;
+  --color-surface-hi: #254137;
+  --color-border: #355348;
+  --color-border-hi: #527466;
+
+  /* Text */
+  --color-ink: #f8f5e9;
+  --color-ink-muted: #c2d4c7;
+  --color-ink-faint: #9db9a8;
+
+  /* Signal + semantics */
+  --color-signal: #f4cb78;
+  --color-signal-ink: #19251c;
+  --color-emergency: #ef4444;
+  --color-warn: #f59e0b;
+  --color-ok: #22c55e;
+
+  /* Case lifecycle */
+  --color-status-pending: #94a3b8;
+  --color-status-assigned: #38bdf8;
+  --color-status-dispatched: #f59e0b;
+  --color-status-onscene: #a78bfa;
+  --color-status-investigating: #2dd4bf;
+  --color-status-adminreview: #818cf8;
+  --color-status-changes: #e879f9;
+  --color-status-closed: #22c55e;
+
+  /* Type */
+  --font-sans:
+    'Inter var', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', 'JetBrains Mono', Menlo, monospace;
+
+  /* Radii + elevation */
+  --radius-panel: 0.875rem;
+  --shadow-panel: 0 1px 0 0 rgb(255 255 255 / 0.03) inset, 0 12px 32px -18px rgb(0 0 0 / 0.9);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-base);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* A quiet dawn sky above a forest horizon: atmosphere only, never behind form fields.
+     Theme override in theme.css. */
+  .dawn-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .dawn-hero::after {
+    position: absolute;
+    z-index: -1;
+    inset: auto -8% -38% 45%;
+    height: 64%;
+    border-radius: 50% 50% 0 0;
+    content: '';
+    pointer-events: none;
+  }
+
+  /* Keep Leaflet beneath app chrome (modals, toasts, nav). */
+  .leaflet-container {
+    z-index: 0;
+    background: var(--color-void);
+    font-family: var(--font-sans);
+  }
+
+  .leaflet-popup-content-wrapper,
+  .leaflet-popup-tip {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .leaflet-bar a,
+  .leaflet-bar a:hover {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    border-bottom-color: var(--color-border);
+  }
+
+  .tabular {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  .mobile-nav-scroll::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Loading banner mark */
+@keyframes loading-banner-pulse {
+  0%, 100% { transform: scale(0.95); }
+  50%      { transform: scale(1.05); }
+}
+.loading-banner-pulse {
+  animation: loading-banner-pulse 1.6s ease-in-out infinite;
+}
+
+/* NGS brand mark animations */
+.ng-logo-mark { --ng-speed: 1; }
+.ng-logo-mark[data-speed='fast'] { --ng-speed: 0.7; }
+
+@keyframes ng-shield-draw {
+  from { stroke-dashoffset: var(--ng-draw-offset, 400); }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes ng-checkmark-draw {
+  from { stroke-dashoffset: var(--ng-check-offset, 30); }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes ng-ring-pulse {
+  0%   { transform: scale(0.9); opacity: 1; }
+  100% { transform: scale(1.15); opacity: 0.2; }
+}
+@keyframes ng-sweep-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes ng-dot-twinkle {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 1; }
+}
+@keyframes ng-fade-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ng-logo-shield-draw {
+  stroke-dasharray: var(--ng-draw-offset, 400);
+  stroke-dashoffset: var(--ng-draw-offset, 400);
+  animation: ng-shield-draw calc(1200ms * var(--ng-speed, 1)) ease-out forwards;
+}
+.ng-logo-check-draw {
+  stroke-dasharray: var(--ng-check-offset, 30);
+  stroke-dashoffset: var(--ng-check-offset, 30);
+  animation: ng-checkmark-draw calc(600ms * var(--ng-speed, 1)) ease-out calc(1000ms * var(--ng-speed, 1)) forwards;
+}
+.ng-logo-ring-pulse {
+  transform-origin: center;
+  animation: ng-ring-pulse calc(2000ms * var(--ng-speed, 1)) ease-out infinite;
+}
+.ng-logo-ring-pulse[data-ring='3'] { animation-delay: 0ms; }
+.ng-logo-ring-pulse[data-ring='2'] { animation-delay: 200ms; }
+.ng-logo-ring-pulse[data-ring='1'] { animation-delay: 400ms; }
+.ng-logo-sweep {
+  transform-origin: center;
+  animation: ng-sweep-rotate calc(3000ms * var(--ng-speed, 1)) linear infinite;
+}
+.ng-logo-dot {
+  animation: ng-dot-twinkle calc(1800ms * var(--ng-speed, 1)) ease-in-out infinite;
+}
+.ng-logo-word {
+  opacity: 0;
+  animation: ng-fade-up calc(400ms * var(--ng-speed, 1)) ease-out forwards;
+}
+.ng-logo-word[data-line='1'] { animation-delay: 1200ms; }
+.ng-logo-word[data-line='2'] { animation-delay: 1300ms; }
+.ng-logo-word[data-line='3'] { animation-delay: 1400ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ng-logo-shield-draw,
+  .ng-logo-check-draw,
+  .ng-logo-ring-pulse,
+  .ng-logo-sweep,
+  .ng-logo-dot,
+  .ng-logo-word {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    stroke-dasharray: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+}
+
+/* Dawn Canopy v2 — glassmorphism + layered depth background */
+body {
+  background-color: var(--color-base);
+  color: var(--color-ink);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: -25%;
+  z-index: -3;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    #008751 0%,
+    #008751 33.3%,
+    #ffffff 33.3%,
+    #ffffff 66.6%,
+    #008751 66.6%,
+    #008751 100%
+  );
+  filter: blur(140px) saturate(120%);
+  opacity: 0.14; /* overridden by theme.css */
+  transform: rotate(-14deg);
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  /* overridden by theme.css */
+}
+
+.ng-shield-watermark {
+  opacity: 0.05;
+  filter: blur(3px);
+  transform: scale(1.4);
+}
+
+/* Glass primitives — visuals set by theme.css, transitions here */
+.glass-panel {
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 8px 32px rgba(0, 0, 0, 0.28);
+  transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.glass-panel--lift:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 14px 40px rgba(0, 0, 0, 0.38);
+}
+
+.glass-bar {
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  body::before,
+  body::after,
+  .ng-shield-watermark {
+    display: none;
+  }
+  .glass-panel,
+  .glass-bar {
+    background: var(--color-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-panel,
+  .glass-panel--lift {
+    transition: none;
+  }
+  .glass-panel--lift:hover {
+    transform: none;
+  }
+}
+
+@keyframes ng-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.ng-skeleton {
+  animation: ng-shimmer 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ng-skeleton {
+    animation: none;
+    background: rgba(37, 65, 55, 0.5);
+  }
+}
+
+@keyframes ng-scale-in {
+  from { transform: scale(0.4); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
